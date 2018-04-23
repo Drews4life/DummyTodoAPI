@@ -34,8 +34,8 @@ MongoClient.connect("mongodb://localhost:27017/TodoApp", (err, db) => {
 
     // db.close();
 
-    db.collection("Users").find({name: "Andrews"}).count().then((count) => {
-        console.log(`Users Andrew : ${count}`);
+    db.collection("Todos").find({completed: true}).count().then((count) => {
+        console.log(`alive : ${count}`);
     }, (err) => {
         if(err){
             console.log("Unable to fetch data", err);
