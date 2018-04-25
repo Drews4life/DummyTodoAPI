@@ -12,14 +12,16 @@ var UserSchema = mongoose.Schema({
 
 var User = mongoose.model("User", UserSchema);
 
-var newUser = new User({
-    email: "jcolegang@bmail.us"
-});
+// var newUser = new User({
+//     email: "jcolegang@bmail.us"
+// });
 
-newUser.save().then((res) => {
-    console.log("Saved user: \n", JSON.stringify(res, undefined, 2));
-}, (err) => {
-    if(err){
-        console.log(`An error occured ${err}`);
-    }
-});
+// newUser.save().then((res) => {
+//     console.log("Saved user: \n", JSON.stringify(res, undefined, 2));
+// }, (err) => {
+//     if(err){
+//         console.log(`An error occured ${err}`);
+//     }
+// });
+
+module.exports = {User};

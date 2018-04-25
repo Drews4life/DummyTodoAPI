@@ -23,15 +23,17 @@ var TodoSchema = mongoose.Schema({
 
 var Todo = mongoose.model("Todo", TodoSchema);
 
-var newTodo = new Todo({
-    text: "     Buy a bby boy     ",
+// var newTodo = new Todo({
+//     text: "     Buy a bby boy     ",
    
-});
+// });
 
-newTodo.save().then((res) => {
-    console.log("Saved todo: \n", JSON.stringify(res, undefined, 2));
-}, (err) => {
-    if(err){
-        console.log(`An error occured ${err}`);
-    }
-});
+// newTodo.save().then((res) => {
+//     console.log("Saved todo: \n", JSON.stringify(res, undefined, 2));
+// }, (err) => {
+//     if(err){
+//         console.log(`An error occured ${err}`);
+//     }
+// });
+
+module.exports = {Todo};
