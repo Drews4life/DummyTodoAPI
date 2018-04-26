@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const {ObjectID} = require("mongodb");
 
 var {mongoose} = require("./db/mongoose.js");
 var {Todo} = require("./models/todo.js");
@@ -31,7 +32,7 @@ app.post("/todos", (req, res) => {
     });
 
     todo.save().then((result) => {
-        res.send(result);
+        res.send({result});
     }, (e) => {
         res.status(400).send(e);
     });
@@ -49,7 +50,29 @@ app.get("/todos", (req, res) => {
     }, (e) => {
         res.status(400).send("An error occured: " + e);
     });
-})
+});
+
+app.get("/todos/:id", (req, res) => {
+    var id = req.params.id;
+
+    if(ObjectID.isValid(id)){
+        Todo.findById(id).then((result) => {
+            if(!result){
+               return res.status(400).send({
+                    errorMessage: "This ToDo doesnt exist"
+                });
+            }
+
+            res.status(200).send({result});
+
+        }).catch((e) => res.status(404));
+    } else {
+        return res.status(400).send({
+            errorMessage: "ToDo-ID is not valid"
+        });
+    }
+    
+});
 
 app.listen(port, () => {   
      console.log(`listening to port: ${port}`);             
