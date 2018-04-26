@@ -5,9 +5,13 @@ var {Todo} = require("./../models/todo.js");
 //going one folder back
 var {app} = require("./../server.js");
 
+const todos = [{text: "first"}, {text: "second"}, {text:"third"}];
+
 //always calls first and clears the database
 beforeEach((done) => {
-    Todo.remove({}).then(() => done());
+    Todo.remove({}).then(() => {
+        Todo.insertMany(todos)
+    }).then(() => done());
 });
 
 describe("POST /todos", () => {
@@ -26,7 +30,7 @@ describe("POST /todos", () => {
                     return done(err + "\n*Error in callback*");
                 }
                 
-                Todo.find().then((todos) => {
+                Todo.find({text}).then((todos) => {
                     expect(todos.length).toBe(1);
                     expect(todos[0].text).toBe(text);
                     done();
@@ -47,9 +51,27 @@ describe("POST /todos", () => {
                 }
 
                 Todo.find().then((todos) => {
-                    expect(todos.length).toBe(0);
+                    expect(todos.length).toBe(3);
                     done();
                 }).catch((e) => done(e + "\n*Error in promise"));
             });
     });
 })
+
+
+describe("GET /todos", () => {
+
+    it("Should succesfully return TODOs", (done) => {
+
+        request(app)
+        .get("/todos")
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todos.length).toBe(3);
+        })
+        .end(done);
+
+    });
+    
+
+});
