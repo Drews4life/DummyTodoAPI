@@ -39,6 +39,18 @@ app.post("/todos", (req, res) => {
     console.log(req.body);
 });
 
+app.get("/todos", (req, res) => {
+    Todo.find().then( (todos) => {
+        res.send({
+            todos,
+            status: 200,
+            message: "Results listed"
+        });
+    }, (e) => {
+        res.status(400).send("An error occured: " + e);
+    });
+})
+
 app.listen(port, () => {   
      console.log(`listening to port: ${port}`);             
 });
