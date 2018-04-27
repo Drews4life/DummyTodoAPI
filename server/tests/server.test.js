@@ -83,10 +83,10 @@ describe("GET /todos/:id", () => {
         request(app)
             .get(`/todos/${todos[0]._id.toHexString()}`)
             .expect(200)
-            .expect((result) => {
-                expect(result.body.result.text).toBe(todos[0].text);
+            .expect((res) => {
+                expect(res.body.result.text).toBe(todos[0].text);
             })
-               .end(done);
+            .end(done);
                 
     });
 
@@ -108,4 +108,48 @@ describe("GET /todos/:id", () => {
             .end(done);
     });
 
+});
+
+describe("DELETE /todos/:id", () => {
+    it("Should not pass in invalid ID", (done) => {
+        request(app)
+            .delete("/todos/2312")
+            .expect(400)
+            .end(done);
+    });
+
+    it("Should return deleted todo", (done) => {
+        var id = todos[0]._id;
+        
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(200)
+            .expect( (res) => {
+                expect(res.body.todo._id).toBe((todos[0]._id).toHexString());
+            })
+            .end((err, res) => {
+                if(err)
+                {
+                    return done(err);
+                }
+
+                Todo.find().then((docs) => {
+                    expect(docs.length).toBe(2);
+                    Todo.findById(id)
+                }).then((todos) => {
+                    expect(todos).toNotExist();
+                    done();
+                }).catch((e) => done("Error in promise: " + e));
+
+            });
+    });
+    
+    it("Should validate id, but do not find user to delete", (done) => {
+        var id = new ObjectID().toHexString();
+
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(400)
+            .end(done);
+    });
 });
