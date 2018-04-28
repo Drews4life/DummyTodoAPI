@@ -1,3 +1,4 @@
+require("./config/config.js");
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
@@ -10,7 +11,7 @@ var {User} = require("./models/user.js");
 
 var app = express();
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT;
 
 // app.use((req, res, next) => {
 //
