@@ -6,7 +6,21 @@ var {Todo} = require("./../models/todo.js");
 //going one folder back
 var {app} = require("./../server.js");
 
-const todos = [{_id: new ObjectID(),text: "first"}, {_id: new ObjectID(), text: "second"}, {_id: new ObjectID(), text:"third"}];
+const todos = [
+{
+    _id: new ObjectID(),
+    text: "first"
+}, 
+{
+    _id: new ObjectID(),
+    text: "second",
+    completed: true,
+    completedAt: 1241235
+}, 
+{
+    _id: new ObjectID(),
+    text:"third"
+}];
 
 //always calls first and clears the database
 beforeEach((done) => {
@@ -150,6 +164,48 @@ describe("DELETE /todos/:id", () => {
         request(app)
             .delete(`/todos/${id}`)
             .expect(400)
+            .end(done);
+    });
+});
+
+describe("PATCH /todos/:id", () => {
+    it("Should change completedAt if completed === false", (done) => {
+        var id = todos[1]._id.toHexString();
+        var text = "hello from test";
+
+        request(app)
+            .patch(`/todos/${id}`)
+            .send({
+                text,
+                completed: false
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBeFalsy;
+                expect(res.body.todo.completedAt).toNotExist;
+
+            })
+            .end(done);
+    });
+
+
+    it("Should update todo", (done) => {
+        var id = todos[0]._id.toHexString();
+        var text = "Testing text update";
+
+        request(app)
+            .patch(`/todos/${id}`)
+            .send({
+                text,
+                completed: true
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBeTruthy;
+                expect(res.body.todo.completedAt).toBeA("number");
+            })
             .end(done);
     });
 });
