@@ -42,15 +42,35 @@ UserSchema.methods.toJSON = function() {
 
 
 UserSchema.methods.generateAuthToken = function () {
+    //instance methods are lowercased
     var user = this;
-    var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+    var access = "auth";
+    var token = jwt.sign({_id: user._id.toHexString(), access}, "abc123").toString();
   
     user.tokens.unshift({access, token});
   
     return user.save().then(() => {
     return token;
     });
+};
+
+UserSchema.statics.findByToken = function(token) {
+  //model methods are uppercased
+  var User = this;
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, "abc123");
+  } catch (e) {
+    return Promise.reject();
+  }
+
+  return User.findOne({
+    _id: decoded._id,
+    "tokens.token": token,
+    "tokens.access": "auth"
+  }); 
+
 };
 
 
