@@ -1,158 +1,122 @@
-require("./config/config.js");
-const express = require("express");
-const bodyParser = require("body-parser");
-const fs = require("fs");
-const _ = require("lodash");
-const {ObjectID} = require("mongodb");
+require('./config/config');
 
-var {mongoose} = require("./db/mongoose.js");
-var {Todo} = require("./models/todo.js");
-var {User} = require("./models/user.js");
-var {authenticate} = require("./middleware/authenticate.js");
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
+
+var {mongoose} = require('./db/mongoose');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
-
-var port = process.env.PORT;
-
-// app.use((req, res, next) => {
-//
-//     var log = `${Date()} : ${req.method} : ${req.url}`;
-//     fs.appendFile("server.log", log + "\n", (err) => {
-//         if(err){
-//             console.log("Couldnt append file");
-//         }
-//     });
-//
-//     next();
-// });
+const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post("/todos", (req, res) => {
-
-    var todo = new Todo({
-        text: req.body.text
-    });
-
-    todo.save().then((result) => {
-        res.send({result});
-    }, (e) => {
-        res.status(400).send(e);
-    });
-
-});
-
-app.get("/todos", (req, res) => {
-    Todo.find().then( (todos) => {
-        res.send({
-            todos,
-            status: 200,
-            message: "Results listed"
-        });
-    }, (e) => {
-        res.status(400).send("An error occured: " + e);
-    });
-});
-
-app.get("/todos/:id", (req, res) => {
-    var id = req.params.id;
-
-    if(ObjectID.isValid(id)){
-        Todo.findById(id).then((result) => {
-            if(!result){
-               return res.status(400).send({
-                    errorMessage: "This ToDo doesnt exist"
-                });
-            }
-
-            res.status(200).send({result});
-
-        }).catch((e) => res.status(404));
-    } else {
-        return res.status(400).send({
-            errorMessage: "ToDo-ID is not valid"
-        });
-    }
-    
-});
-
-app.delete("/todos/:id", (req, res) => {
-    var id = req.params.id;
-
-    if(ObjectID.isValid(id)){
-
-        Todo.findByIdAndRemove(id).then((todo) => {
-            if(!todo){
-                return res.status(400).send({
-                    errorMessage: "NOT FOUND"
-                })
-            }
-
-            res.status(200).send({todo});
-
-        }).catch((e) => res.status(404));
-
-    } else {
-        return res.status(400).send({
-            errorMessage: "ToDos ID not found"
-        })
-    }
-});
-
-app.patch("/todos/:id", (req, res) => {
-    //CURRENTLY HERE
-    var id = req.params.id;
-    var body = _.pick(req.body, ["text", "completed"]);
-
-    if(!ObjectID.isValid(id)){
-
-        return res.status(400).send({
-            errorMessage: "ID not found"
-        });
-       
-    }
-
-
-    if(_.isBoolean(body.completed) && body.completed){
-        body.completedAt = new Date().getTime();
-    } else {
-        body.completed = false;
-        body.completedAt = null;
-    }
-
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
-        if(!todo){
-            return res.status(400).send({
-                errorMessage: "ToDo not found"
-            });
-        }
-
-        res.send({todo});
-    }).catch((e) => res.status(400).send({
-        errorMessage: "Something went wrong"
-    }));
-});
-
-app.post('/users', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password']);
-    var user = new User(body);
-  
-    user.save().then(() => {
-      return user.generateAuthToken();
-    }).then((token) => {
-      res.header('x-auth', token).send(/*"email: " + */user/*.email + "\nId: " + user._id*/);
-    }).catch((e) => {
-      res.status(400).send(e);
-    })
+app.post('/todos', (req, res) => {
+  var todo = new Todo({
+    text: req.body.text
   });
 
-
-app.get("/users/me", authenticate, (req, res) => {
-    res.send(req.user);
+  todo.save().then((doc) => {
+    res.send(doc);
+  }, (e) => {
+    res.status(400).send(e);
+  });
 });
 
-app.listen(port, () => {   
-    console.log(`listening to port: ${port}`);             
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    res.send({todos});
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
+app.patch('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  })
+});
+
+// POST /users
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
+});
+
+app.listen(port, () => {
+  console.log(`Started up at port ${port}`);
 });
 
 module.exports = {app};
