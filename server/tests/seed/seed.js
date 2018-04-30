@@ -17,23 +17,30 @@ const users = [{
 }, {
     _id: secondUserID,
     email: "drewsemailBAD@gmail.com",
-    password: "stillonewaypass"
+    password: "stillonewaypass",
+    tokens: [{
+        access: "auth",
+        token: jwt.sign({_id: secondUserID, access: "auth"}, "abc123").toString()
+    }]
 }];
 
 const todos = [
     {
         _id: new ObjectID(),
-        text: "first"
+        text: "first",
+        _creator: firstUserID
     }, 
     {
         _id: new ObjectID(),
         text: "second",
         completed: true,
-        completedAt: 1241235
+        completedAt: 1241235,
+        _creator: secondUserID
     }, 
     {
         _id: new ObjectID(),
-        text:"third"
+        text:"third",
+        _creator: secondUserID
 }];
 
 const populateTodos = (done) => {

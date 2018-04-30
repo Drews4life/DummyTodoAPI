@@ -14,7 +14,14 @@ var UserSchema = new mongoose.Schema({
     validate: {
       validator: validator.isEmail,
       message: "{VALUE} is not a valid email"
-    }
+     }//,
+    // uniqueness: function(){
+    //   var user = this;
+      
+    //   user.find({email: this.email}).then((res) => {
+    //     throw new Error;
+    //   })
+    // }
   },
   password: {
     type: String,
@@ -45,7 +52,12 @@ UserSchema.methods.generateAuthToken = function () {
   var access = 'auth';
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
-  user.tokens.unshift({access, token});
+  var tokens = [{
+    access,
+    token
+  }];
+
+  user.tokens = tokens;
 
   return user.save().then(() => {
     return token;
@@ -100,8 +112,15 @@ UserSchema.statics.findByCredentials = function (email, password) {
   });
 };
 
+
 UserSchema.pre('save', function (next) {
   var user = this;
+
+//   User.find({email: user.email}).then((res) => {
+//     return User.remove({email: res[1].email});
+//  }).then((res) => {
+//   console.log(res);
+// });
 
   if (user.isModified('password')) {
     bcrypt.genSalt(10, (err, salt) => {

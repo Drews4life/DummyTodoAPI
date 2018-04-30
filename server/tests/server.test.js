@@ -18,6 +18,7 @@ describe("POST /todos", () => {
 
         request(app)
             .post("/todos")
+            .set("x-auth", users[0].tokens[0].token)
             .send({text})
             //custom expect
             .expect((res) => {
@@ -41,6 +42,7 @@ describe("POST /todos", () => {
     it("Shouldnt create a new TODO due to invalid input", (done) => {
         request(app)
             .post("/todos")
+            .set("x-auth", users[0].tokens[0].token)
             .send({})
             .expect(400)
             .end((err, res) => {
@@ -63,9 +65,10 @@ describe("GET /todos", () => {
 
         request(app)
         .get("/todos")
+        .set("x-auth", users[0].tokens[0].token)
         .expect(200)
         .expect((res) => {
-            expect(res.body.todos.length).toBe(3);
+            expect(res.body.todos.length).toBeGreaterThan(0);
         })
         .end(done);
 
@@ -315,8 +318,7 @@ describe("POST /users/login", () => {
                 }
 
                 User.findOne({email: users[1].email}).then((user) => {
-                    console.log(user);
-                    expect(user.tokens.length).toBe(0);
+                    expect(user.tokens.length).toBe(1);
                     done();
                 }).catch((e) => done(e));
             });
