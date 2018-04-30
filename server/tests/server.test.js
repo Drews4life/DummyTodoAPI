@@ -252,7 +252,7 @@ describe("POST /users", () => {
         request(app)
             .post("/users")
             .send({email, password})
-            .expect(401)
+            .expect(400)
             .end(done);
     });
 
@@ -263,7 +263,27 @@ describe("POST /users", () => {
        request(app)
             .post("/users")
             .send({email, password})
-            .expect(401)
+            .expect(400)
             .end(done);
+    });
+});
+
+describe("DELETE /users/me/token", () => {
+    it("Should delete token property", (done) => {
+        
+        request(app)
+            .delete("/users/me/token")
+            .set("x-auth", users[0].tokens[0].token)
+            .expect(200)
+            .end((err, res) => {
+                if(err){
+                    return done(err);
+                }
+
+                User.findById(users[0]._id).then((res) => {
+                    expect(res.tokens[0]).toNotExist();
+                    done();
+                }).catch((e) => done(e));
+            });
     });
 });
