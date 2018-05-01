@@ -115,21 +115,27 @@ app.post('/users', (req, res) => {
   User.findOne({email: user.email}).then((result) => {
     if(result){
       console.log("This user already exist");
-
       return res.status(400).send({
         errorMessage: "This user already exist"
-      })
+      });
+    } else {
+      user.save().then(() => {
+        return user.generateAuthToken();
+      }).then((token) => {
+        res.header('x-auth', token).send(user);
+      }).catch((e) => {
+        res.status(400).send(e);
+      });
     }
-  })
+  });
+  
+  // if(User.CheckingUserInDB(user.email)){
+  //   console.log("This email exist");
+  // } else {
+  //   console.log("This email doesnt exist");
+  // }
   
 
-  user.save().then(() => {
-    return user.generateAuthToken();
-  }).then((token) => {
-    res.header('x-auth', token).send(user);
-  }).catch((e) => {
-    res.status(400).send(e);
-  })
 });
 
 app.get('/users/me', authenticate, (req, res) => {
